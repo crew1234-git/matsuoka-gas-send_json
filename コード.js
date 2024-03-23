@@ -3,39 +3,32 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwnpo2mo94MqRuGFCd1
 
 const postSpreadsheetData = () => {
   const ui = SpreadsheetApp.getUi(); // UIインスタンスの取得
-  // 確認ダイアログを表示
   const response = ui.alert('確認', 'keywordを送信しますか？', ui.ButtonSet.YES_NO);
 
-  // ユーザーの選択に応じて処理
   if (response == ui.Button.YES) {
     try {
-      // スプレッドシートのデータを取得（A列のみ）
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-      // 最初の行（ヘッダー）を除外してデータを取得
-      const columnAData = sheet.getRange("A2:A").getValues().filter(row => row[0] !== "");
-      const b2Value = sheet.getRange("B2").getValue();
-    
-      // POSTリクエストのオプションを設定
+      const lastRow = sheet.getLastRow();
+      // A列とD列のデータを取得
+      const dataRange = sheet.getRange(2, 1, lastRow - 1, 4); // 2行目から最終行まで、1から4列目（AからD）まで
+      const data = dataRange.getValues().map(row => [row[0], row[3]]).filter(row => row[0] !== ""); // A列が空でない行のA列とD列のデータ
+      
       const payload = {
-        data: columnAData,
-        filenamePrefix: b2Value,
+        data: data,
+        filenamePrefix: sheet.getRange("C2").getValue(),
         token: TOKEN
       };
-    
+      
       const options = {
         method: 'post',
         contentType: 'application/json',
         payload: JSON.stringify(payload)
       };
-    
-      // WebアプリケーションにデータをPOST
+      
       const response = UrlFetchApp.fetch(WEB_APP_URL, options);
       Logger.log(response.getContentText());
-
-      // 正常終了時のメッセージ
       ui.alert('Keywordデータの送信に成功しました');
     } catch (e) {
-      // 異常終了時のメッセージ
       ui.alert(`Keywordデータの送信でエラーが発生しました: ${e.message}`);
     }
   } else {
