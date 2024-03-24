@@ -9,13 +9,19 @@ const postSpreadsheetData = () => {
     try {
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
       const lastRow = sheet.getLastRow();
-      // A列とD列のデータを取得
-      const dataRange = sheet.getRange(2, 1, lastRow - 1, 4); // 2行目から最終行まで、1から4列目（AからD）まで
-      const data = dataRange.getValues().map(row => [row[0], row[3]]).filter(row => row[0] !== ""); // A列が空でない行のA列とD列のデータ
+      
+      // A列を取得
+      const columnAData = sheet.getRange("A2:A" + lastRow).getValues();
+      
+      // B列を取得し、空欄の場合は0を代入
+      const columnBData = sheet.getRange("B2:B" + lastRow).getValues().map(row => row[0] === "" ? [0] : row);
+      
+      const data = columnAData.map((row, index) => [row[0], columnBData[index][0]]);
+      const filenamePrefix = sheet.getRange("C2").getValue(); // C列の2行目
       
       const payload = {
         data: data,
-        filenamePrefix: sheet.getRange("C2").getValue(),
+        filenamePrefix: filenamePrefix,
         token: TOKEN
       };
       
@@ -35,3 +41,4 @@ const postSpreadsheetData = () => {
     ui.alert('送信がキャンセルされました。');
   }
 };
+
