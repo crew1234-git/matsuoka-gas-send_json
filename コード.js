@@ -3,11 +3,22 @@ const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbws8B77ADDrBTl59bUM
 
 const postSpreadsheetData = () => {
   const ui = SpreadsheetApp.getUi(); // UIインスタンスの取得
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+
+  // A2とC2のセルが空欄かどうかチェック
+  const a2Value = sheet.getRange("A2").getValue();
+  const c2Value = sheet.getRange("C2").getValue();
+  
+  if (!a2Value || !c2Value) {
+    // 必須のセルが空欄の場合はポップアップを表示して処理を終了
+    ui.alert('エラー', 'A2セル、C2セルの入力は必須です', ui.ButtonSet.OK);
+    return;
+  }
+
   const response = ui.alert('確認', 'keywordを送信しますか？', ui.ButtonSet.YES_NO);
 
   if (response == ui.Button.YES) {
     try {
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
       const lastRow = sheet.getLastRow();
       
       // A列とB列のデータを取得
